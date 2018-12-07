@@ -1,4 +1,5 @@
 from image_gen import *
+from camera_cal import *
 from moviepy.editor import VideoFileClip
 
 class Lane():
@@ -9,6 +10,7 @@ class Lane():
         self.right_fit_m = None
         self.left_curvature = None
         self.right_curvature = None
+
 
 def calculateLanes(img):
     """
@@ -31,7 +33,7 @@ def calculateLanes(img):
     lineMiddle = lineLeft + (lineRight - lineLeft)/2
     dif_from_vehicle = lineMiddle - vehicleCenter
     
-    return (left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle, out_img)
+    return (left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle)
 
 def displayLanes(img, left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle):
     """
@@ -41,23 +43,24 @@ def displayLanes(img, left_fit, right_fit, left_fit_m, right_fit_m, left_curvatu
     
     return output
     
+    
 def videoPipeline(inputVideo, outputVideo):
     """
     Process the `inputVideo` frame by frame to find the lane lines, draw curvarute and vehicle position information and
     generate `outputVideo`
     """
     myclip = VideoFileClip(inputVideo)
-    myclip = myclip.subclip(23, 25)
+    #myclip = myclip.subclip(23, 24)
     
     leftLane = Lane()
     rightLane = Lane()
-    
 
-    def process_image(img):        
+    #computeCameraCal()
+    WarpImgConstants()    
 
-        #img = cv2.imread('./test_images/test3.jpg')
-        
-        left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle, binary_warped = calculateLanes(img)
+    def process_image(img):           
+
+        left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle = calculateLanes(img)
 
         if left_curvature > 10000:
             left_fit = leftLane.left_fit
@@ -79,9 +82,7 @@ def videoPipeline(inputVideo, outputVideo):
             
         img = displayLanes(img, left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle)
 
-        compImage = composeImageBase(img, left_curvature, right_curvature, dif_from_vehicle)
-
-        #cv2.imshow('compImage', compImage)
+        compImage = composeImageBase(img, left_curvature, right_curvature, dif_from_vehicle)        
 
         return compImage
 
