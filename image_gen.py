@@ -125,7 +125,6 @@ def WarpImgConstants():
     bottomY = 720
     topY = 455
 
-
     left1 = (190, bottomY)
     left1_x, left1_y = left1
     left2 = (585, topY)
@@ -165,6 +164,7 @@ def WarpImgConstants():
     img_size = (nX, nY)
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
+
     dist_pickle['M'] = M
     dist_pickle['Minv'] = Minv
 
@@ -173,6 +173,9 @@ def WarpImgConstants():
 '''
     print(M)
     print(Minv)        
+
+    warped = cv2.warpPerspective(undist, M, img_size)
+    cv2.imwrite('./output_images/warped.jpg', warped)
 
     warped = cv2.warpPerspective(undist, M, img_size)
     cv2.imwrite('./output_images/warped1.jpg', warped)
@@ -187,8 +190,7 @@ def WarpImgConstants():
 
 def changePerspective(img, M):
     img_size = (img.shape[1], img.shape[0])
-    warped = cv2.warpPerspective(img, M, img_size)
-    cv2.imwrite('./output_images/warped.jpg', warped)
+    warped = cv2.warpPerspective(img, M, img_size)    
     
     return warped
 
