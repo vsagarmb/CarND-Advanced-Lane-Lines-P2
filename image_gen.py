@@ -165,19 +165,31 @@ def WarpImgConstants():
     img_size = (nX, nY)
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
-
-    warped = cv2.warpPerspective(undist, M, img_size)
- 
     dist_pickle['M'] = M
     dist_pickle['Minv'] = Minv
 
     pickle.dump(dist_pickle,open('camera_cal/cal_pickle.p', 'wb'))
 
+'''
+    print(M)
+    print(Minv)        
+
+    warped = cv2.warpPerspective(undist, M, img_size)
+    cv2.imwrite('./output_images/warped1.jpg', warped)
+
+    img = cv2.imread('test_images\\test6.jpg')  
+    undist = cal_undistort(img, mtx, dist)
+    
+    warped = cv2.warpPerspective(undist, M, img_size)
+    cv2.imwrite('./output_images/warped1.jpg', warped)
+'''
+
 
 def changePerspective(img, M):
     img_size = (img.shape[1], img.shape[0])
     warped = cv2.warpPerspective(img, M, img_size)
-
+    cv2.imwrite('./output_images/warped.jpg', warped)
+    
     return warped
 
 # Define conversions in x and y from pixels space to meters
@@ -208,12 +220,14 @@ def findLines(image, nwindows=9, margin=110, minpix=50):
     
     Returns (left_fit, right_fit, left_lane_inds, right_lane_inds, out_img, nonzerox, nonzeroy)
     """    
+    
     # Make a binary and transform image
     binary_warped = combineAndTransform(image)
     # Take a histogram of the bottom half of the image
     histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
     # Create an output image to draw on and  visualize the result
     out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
+    
     # Find the peak of the left and right halves of the histogram
     # These will be the starting point for the left and right lines
     midpoint = np.int(histogram.shape[0]/2)
@@ -288,8 +302,7 @@ def findLines(image, nwindows=9, margin=110, minpix=50):
 def calculateCurvature(yRange, left_fit_cr):
     """
     Returns the curvature of the polynomial `fit` on the y range `yRange`.
-    """
-    
+    """    
     return ((1 + (2*left_fit_cr[0]*yRange*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
 
 def drawLine(img, left_fit, right_fit):
@@ -311,7 +324,7 @@ def drawLine(img, left_fit, right_fit):
     pts = np.hstack((pts_left, pts_right))
     
     # Draw the lane onto the warped blank image
-    cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
+    cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
     
     # Warp the blank back to original image space using inverse perspective matrix (Minv)
     newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0])) 
@@ -319,9 +332,12 @@ def drawLine(img, left_fit, right_fit):
 
 
 def combineAndTransform(img):
-    
-    gradient_img = combineGradients(img)    
+    undist = cal_undistort(img, mtx, dist)
+    #cv2.imwrite('./output_images/undistorted.jpg', undist)
+
+    gradient_img = combineGradients(undist)    
     stacked = np.dstack((gradient_img, gradient_img, gradient_img))*255
+    #cv2.imwrite('./output_images/threshold.jpg', stacked)
     cv2.imwrite('stacked_gradient_img.jpg', stacked)    
 
     return changePerspective(gradient_img, dist_pickle['M'])

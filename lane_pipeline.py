@@ -16,7 +16,7 @@ def calculateLanes(img):
     """
     Calculates the lane on image `img`.
     """
-    yRange = 719
+    yRange = 720
 
     left_fit, right_fit, left_fit_m, right_fit_m, _, _, out_img, _, _ = findLines(img)    
 
@@ -50,16 +50,16 @@ def videoPipeline(inputVideo, outputVideo):
     generate `outputVideo`
     """
     myclip = VideoFileClip(inputVideo)
-    #myclip = myclip.subclip(23, 24)
+    #myclip = myclip.subclip(3, 7)
     
     leftLane = Lane()
     rightLane = Lane()
-
-    #computeCameraCal()
+    
+    computeCameraCal()
     WarpImgConstants()    
 
-    def process_image(img):           
-
+    def process_image(img):                 
+        
         left_fit, right_fit, left_fit_m, right_fit_m, left_curvature, right_curvature, dif_from_vehicle = calculateLanes(img)
 
         if left_curvature > 10000:
@@ -88,6 +88,11 @@ def videoPipeline(inputVideo, outputVideo):
 
     clip = myclip.fl_image(process_image)
     clip.write_videofile(outputVideo, audio=False)
+
+
+# Single Output Images (Need to comment image write at each stage)
+#img = cv2.imread('test_images\\test6.jpg')  
+#process_image(img)
 
 # Project video
 videoPipeline('project_video.mp4', 'output_project_video.mp4')
